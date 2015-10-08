@@ -7,7 +7,7 @@ It's built using straight HTML, CSS and jQuery.
 You can find a working version at [Camp Timer](http://playground.bretteast.me/camp_timer)
 
 
-#HTML5 Bolierplate
+#HTML5 Boilerplate
 
 This file was built on the back of the HTML5 Boilerplate
 
