@@ -4,6 +4,8 @@ This is a single page website that I built so that a mate could play certain sou
 
 It's built using straight HTML, CSS and jQuery.
 
+You can find a working version at [Camp Timer](http://playground.bretteast.me/camp_timer)
+
 
 #HTML5 Bolierplate
 
