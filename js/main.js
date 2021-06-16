@@ -15,11 +15,11 @@ currentTime = new Date();
   if (minutes < 10) {
   minutes = "0" + minutes;
   };
-  
+
   if (seconds < 10) {
 	  seconds = "0" + seconds;
   };
-  
+
 };
 
 function setCurrentTime(){
@@ -33,21 +33,29 @@ setInterval(setCurrentTime, 1000);
 
 
 
-  
+
 // Insert hour and minute dropdown function
 
-var hourDropdown = '<option value="00">00</option>';
+var hourDropdown = '<option value="00">12am</option>';
 var minuteDropdown = '<option value="00">00</option>';
 
 function addTimeDropdowns () {
-	for ( var i = 1; i < 24; i++ ) {
-			if ( i < 10) {
-				i = '0' + i;
-			}
-			hourDropdown = hourDropdown + '<option value="' + i + '">' + i + '</option>';
+	for ( let i = 1; i < 24; i++ ) {
+    let display = i < 12 ? `${i}am` : `${i%12}pm`;
+    if ( i === 0) {
+      display = '12am';
+    }
+    if (i === 12) {
+      display = '12pm';
+    }
+    let value = i;
+    if (i < 10) {
+      value = `0${i}`;
+    }
+    hourDropdown = hourDropdown + '<option value="' + value + '">' + display + '</option>';
 	};
-	
-	for ( var i = 1; i < 60; i++ ) {
+
+	for ( let i = 1; i < 60; i++ ) {
 			if ( i < 10) {
 				i = '0' + i;
 			}
@@ -69,7 +77,7 @@ function addRowClass(){
 	for ( i = 0; i < timerRowArray.length; i++ ) {
 		$(timerRowArray[i]).removeClass().addClass('timer_row row_' + i);
 	};
-	
+
 };
 
 
@@ -80,7 +88,7 @@ function addClasses(newClassName, elementType){
 	for ( i = 0; i < timerRowArray.length; i++ ) {
 		$(timerRowArray[i]).removeClass().addClass(newClassName + i);
 	};
-	
+
 };
 
 
@@ -88,7 +96,7 @@ function addClasses(newClassName, elementType){
 //add new row function
 
 function addNewRow() {
-	$(this).parents('tr.timer_row').after('<tr class="timer_row"><td class="set_time">12:00<span> AM</span></td><td class="sound_cell"><select class="sound_choice"><option value="long_ring">Long Ring</option><option value="ping">Ping</option><option value="alarm_ring">Alarm Ring</option><select></td><td><button class="play_sound">Play Sound</button></td><td><button class="pause_sound">Pause</button></td><td><select class="hour">' + hourDropdown + '</select> <select class="minute">' + minuteDropdown + '</select></td><td><img class="remove_row" src="img/minus.svg" alt="Add Row" height="24px" width="24px" /></td><td><img class="add_row" src="img/plus.svg" alt="Add Row" height="24px" width="24px" /></td></tr>');
+	$('.auto_timer tbody').append('<tr class="timer_row"><td class="set_time">12:00<span> AM</span></td><td class="sound_cell"><select class="sound_choice"><option value="first_call">Call to Activities</option><option value="reveille">Reveille - Wake Up</option><option value="flag_up">To the Colors - Flag Up</option><option value="sticks">Start Sticks</option><option value="flag_down">Retreat - Flag Down</option><option value="taps">Taps</option><select></td><td><button class="play_sound">Play Sound</button></td><td><button class="pause_sound">Pause</button></td><td><select class="hour">' + hourDropdown + '</select> <select class="minute">' + minuteDropdown + '</select></td><td><img class="remove_row" src="img/minus.svg" alt="Add Row" height="24px" width="24px" /></td><td><img class="add_row" src="img/plus.svg" alt="Add Row" height="24px" width="24px" /></td></tr>');
 	addClasses('timer_row row_', $('.timer_row'));
 };
 
@@ -97,11 +105,12 @@ function addNewRow() {
 function removeRow() {
 	$(this).parents('tr.timer_row').remove();
 	addRowClass();
+  setDisplayTimes();
 };
 
 //table row actions
 
-$('table').on('click', ".add_row", addNewRow);
+$('.auto_timer_wrapper').on('click', '.add_row', addNewRow);
 
 $('table').on('click', ".remove_row", removeRow);
 
@@ -111,12 +120,18 @@ var manualSound;
 
 
 function checkManualSound(){
-	if ($(".manual_sound_option option:selected").val() == 'long_ring') {
-		manualSound = document.getElementById('long_ring');
-	} else if ($(".manual_sound_option option:selected").val() == 'ping') {
-		manualSound = document.getElementById('ping');
-	} else if ($(".manual_sound_option option:selected").val() == 'alarm_ring') {
-		manualSound = document.getElementById('alarm_ring');
+	if ($(".manual_sound_option option:selected").val() == 'first_call') {
+		manualSound = document.getElementById('first_call');
+	} else if ($(".manual_sound_option option:selected").val() == 'reveille') {
+		manualSound = document.getElementById('reveille');
+	} else if ($(".manual_sound_option option:selected").val() == 'flag_up') {
+		manualSound = document.getElementById('flag_up');
+	} else if ($(".manual_sound_option option:selected").val() == 'sticks') {
+		manualSound = document.getElementById('sticks');
+	} else if ($(".manual_sound_option option:selected").val() == 'flag_down') {
+		manualSound = document.getElementById('flag_down');
+	} else if ($(".manual_sound_option option:selected").val() == 'taps') {
+		manualSound = document.getElementById('taps');
 	} else {
 		manualSound = null;
 	}
@@ -133,8 +148,13 @@ function pauseManualSound(){
 	manualSound.pause();
 };
 
+function restartManualSound(){
+	manualSound.currentTime = 0;
+};
+
 $('.play_manual_sound').on('click', playManualSound);
 $('.pause_manual_sound').on('click', pauseManualSound);
+$('.restart_manual_sound').on('click', restartManualSound);
 
 
 // add audio components
@@ -144,12 +164,18 @@ var thisAutoSound;
 var getAutoSound;
 
 function playAutoSound(){
-	if($(this).parent().siblings('.sound_cell').children('.sound_choice').val() == 'long_ring') {
-		thisAutoSound = document.getElementById('long_ring');
-	} else if ($(this).parent().siblings('.sound_cell').children('.sound_choice').val() == 'ping') {
-		thisAutoSound = document.getElementById('ping');
-	} else if ($(this).parent().siblings('.sound_cell').children('.sound_choice').val() == 'alarm_ring') {
-		thisAutoSound = document.getElementById('alarm_ring');
+	if($(this).parent().siblings('.sound_cell').children('.sound_choice').val() == 'first_call') {
+		thisAutoSound = document.getElementById('first_call');
+	} else if ($(this).parent().siblings('.sound_cell').children('.sound_choice').val() == 'reveille') {
+		thisAutoSound = document.getElementById('reveille');
+	} else if ($(this).parent().siblings('.sound_cell').children('.sound_choice').val() == 'flag_up') {
+		thisAutoSound = document.getElementById('flag_up');
+	} else if ($(this).parent().siblings('.sound_cell').children('.sound_choice').val() == 'sticks') {
+		thisAutoSound = document.getElementById('sticks');
+	} else if ($(this).parent().siblings('.sound_cell').children('.sound_choice').val() == 'flag_down') {
+		thisAutoSound = document.getElementById('flag_down');
+	} else if ($(this).parent().siblings('.sound_cell').children('.sound_choice').val() == 'taps') {
+		thisAutoSound = document.getElementById('taps');
 	} else {
 		thisAutoSound = null;
 	};
@@ -157,9 +183,12 @@ function playAutoSound(){
 };
 
 function pauseAutoSound(){
-	document.getElementById('long_ring').pause();
-	document.getElementById('ping').pause();
-	document.getElementById('alarm_ring').pause();
+	document.getElementById('first_call').pause();
+	document.getElementById('reveille').pause();
+	document.getElementById('flag_up').pause();
+	document.getElementById('sticks').pause();
+	document.getElementById('flag_down').pause();
+	document.getElementById('taps').pause();
 };
 
 $('table').on('click', '.play_sound', playAutoSound);
@@ -178,12 +207,18 @@ function getRowTimes() {
 		rowMinute[i] = $('.row_' + [i]).find('.minute option:selected').val();
 		rowSound[i] = $('.row_' + [i]).find('.sound_choice option:selected').val();
 
-		if ( rowSound[i] == 'long_ring' ){
-			rowSoundFile[i] = document.getElementById('long_ring');
-		} else if ( rowSound[i] == 'ping' ){
-			rowSoundFile[i] = document.getElementById('ping');
-		} else if ( rowSound[i] == 'alarm_ring'){
-			rowSoundFile[i] = document.getElementById('alarm_ring')
+		if (rowSound[i] == 'first_call' ){
+			rowSoundFile[i] = document.getElementById('first_call');
+		} else if ( rowSound[i] == 'reveille' ){
+			rowSoundFile[i] = document.getElementById('reveille');
+		} else if ( rowSound[i] == 'flag_up'){
+			rowSoundFile[i] = document.getElementById('flag_up')
+		} else if ( rowSound[i] == 'sticks' ){
+			rowSoundFile[i] = document.getElementById('sticks');
+		} else if ( rowSound[i] == 'flag_down'){
+			rowSoundFile[i] = document.getElementById('flag_down')
+		} else if ( rowSound[i] == 'taps' ){
+			rowSoundFile[i] = document.getElementById('taps');
 		}
 		if ( rowHour[i] == hours && rowMinute[i] == minutes && seconds == '00' ){
 			rowSoundFile[i].play();
@@ -198,6 +233,7 @@ setInterval(getRowTimes, 1000);
 
 function setDisplayTimes() {
 	timerRowArray = $('.timer_row');
+  const savedTimes = [];
 	for ( var i = 0; i < timerRowArray.length; i++ ) {
 		var rowHour = [];
 		var rowMinute = [];
@@ -217,11 +253,36 @@ function setDisplayTimes() {
 		} else if ( rowHour[i] == 0 ){
 			$('.row_' + [i]).find('.set_time').html('12:' + rowMinute[i] + '<span> AM</span>');
 		};
-		
+
+    savedTimes.push({
+      row: i,
+      hour: rowHour[i],
+      minute: rowMinute[i],
+      sound: rowSound[i],
+    });
 	};
+  localStorage.setItem('campSounds', JSON.stringify(savedTimes));
 };
+
+function hydrateTimes() {
+  const savedTimes = JSON.parse(localStorage.getItem('campSounds') || []);
+  if (savedTimes.length > 0) {
+    savedTimes.forEach((time) => { // time = {row, hour, minute, sound}
+      const newRow = $('<tr class="timer_row"><td class="set_time">12:00<span> AM</span></td><td class="sound_cell"><select class="sound_choice"><option value="first_call">Call to Activities</option><option value="reveille">Reveille - Wake Up</option><option value="flag_up">To the Colors - Flag Up</option><option value="sticks">Start Sticks</option><option value="flag_down">Retreat - Flag Down</option><option value="taps">Taps</option><select></td><td><button class="play_sound">Play Sound</button></td><td><button class="pause_sound">Pause</button></td><td><select class="hour">' + hourDropdown + '</select> <select class="minute">' + minuteDropdown + '</select></td><td><img class="remove_row" src="img/minus.svg" alt="Add Row" height="24px" width="24px" /></td><td><img class="add_row" src="img/plus.svg" alt="Add Row" height="24px" width="24px" /></td></tr>');
+      newRow.find('.hour').val(time.hour);
+      newRow.find('.minute').val(time.minute);
+      newRow.find('.sound_choice').val(time.sound);
+	    element = $('.auto_timer tbody').append(newRow);
+      console.log(element);
+    })
+  }
+  addClasses('timer_row row_', $('.timer_row'));
+  setDisplayTimes();
+}
 
 $('table').on('change', 'select', setDisplayTimes);
 
-//setInterval(setDisplayTimes, 1000);
-
+$(() => {
+  console.log('ready');
+  hydrateTimes();
+});
